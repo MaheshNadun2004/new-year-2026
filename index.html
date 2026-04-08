@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>අලුත් අවුරුදු පුදුමය | කොකුම් කඩන්න + ගිනිකෙළි</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #0f0f23 0%, #1a1a3e 100%);
+            font-family: 'Segoe UI', 'Noto Sans Sinhala', 'Iskoola Pota', system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            position: relative;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        #fireworksCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* අලුත් අවුරුදු රටා */
+        .bg-pattern {
+            position: fixed;
+            inset: 0;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffcc77" opacity="0.15"><path d="M12,2L15,8.5L22,9.5L17,14L18.5,21L12,17.5L5.5,21L7,14L2,9.5L9,8.5L12,2Z"/></svg>');
+            background-size: 45px;
+            background-repeat: repeat;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ප්‍රධාන කාඩ් එක */
+        .surprise-card {
+            position: relative;
+            z-index: 20;
+            max-width: 550px;
+            width: 100%;
+            background: rgba(255,250,242,0.96);
+            backdrop-filter: blur(2px);
+            border-radius: 60px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.3), 0 0 0 8px #ffefb0, 0 0 0 12px #c97e2a;
+            text-align: center;
+            padding: 20px 18px 35px;
+            transition: 0.3s;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: #b6492c;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .sub {
+            color: #d47b2e;
+            font-weight: bold;
+            margin-bottom: 18px;
+            font-size: 1rem;
+        }
+
+        /* Timer එකට styling */
+        .timer-section {
+            background: #2a2a4a;
+            border-radius: 50px;
+            padding: 8px 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .timer-label {
+            color: #ffd966;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        .timer-display {
+            background: #0f0f23;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-family: monospace;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ffaa55;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px #ffaa55;
+        }
+        .timer-warning {
+            animation: pulse 0.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { color: #ffaa55; text-shadow: 0 0 5px #ffaa55; }
+            50% { color: #ff4444; text-shadow: 0 0 10px #ff4444; }
+        }
+
+        /* ක්‍රීඩා පෙට්ටිය */
+        .game-zone {
+            background: #f7ebcd;
+            border-radius: 50px;
+            padding: 20px 12px;
+            margin: 12px 0;
+            border: 2px solid #f7bc5a;
+            box-shadow: inset 0 0 0 4px #fff3e0, 0 8px 12px rgba(0,0,0,0.1);
+        }
+
+        .coconut-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .coconut {
+            background: #8b5a2b;
+            width: 120px;
+            height: 150px;
+            border-radius: 45% 45% 40% 40%;
+            cursor: pointer;
+            transition: 0.05s linear;
+            box-shadow: 0 10px 0 #5a3a1a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .coconut:active {
+            transform: translateY(4px);
+            box-shadow: 0 5px 0 #5a3a1a;
+        }
+
+        .coconut.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .coconut-emoji {
+            font-size: 4.5rem;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3));
+            pointer-events: none;
+        }
+
+        .crack-text {
+            background: #f3cd81;
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-weight: bold;
+            color: #5a2e0e;
+            margin-top: 6px;
+            font-size: 0.8rem;
+            pointer-events: none;
+        }
+
+        /* hit counter */
+        .hit-counter {
+            background: #d9a13b;
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 50px;
+            color: white;
+            font-weight: bold;
+            margin-top: 15px;
+            font-size: 1rem;
+        }
+
+        /* සප්‍රයිස් බඳුන */
+        .surprise-box {
+            margin-top: 20px;
+            background: #ffe3aa;
+            border-radius: 45px;
+            padding: 16px;
+            transition: all 0.4s cubic-bezier(0.34, 1.2, 0.8, 1);
+            border: 2px solid #ffb347;
+        }
+
+        .hidden-gift {
+            display: none;
+        }
+
+        .gift-visible {
+            display: block;
+            animation: pop 0.5s ease-out;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.7); opacity: 0; }
+            80% { transform: scale(1.02); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .gift-message {
+            font-size: 1rem;
+            background: #fff0c0;
+            padding: 15px;
+            border-radius: 40px;
+            color: #a5410f;
+            font-weight: bold;
+            line-height: 1.45;
+        }
+
+        .gift-message span {
+            font-size: 1.8rem;
+            display: inline-block;
+            margin: 3px;
+        }
+
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            padding: 14px 24px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+            transition: 0.05s linear;
+            font-family: inherit;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            flex: 0 1 auto;
+            min-width: 140px;
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+
+        .fireworks-btn {
+            background: #e85d04;
+            color: white;
+            box-shadow: 0 5px 0 #9d3300;
+        }
+
+        .reset-btn {
+            background: #ffaa55;
+            color: #3b2a1a;
+            box-shadow: 0 5px 0 #b4621a;
+        }
+
+        .toast {
+            visibility: hidden;
+            min-width: 200px;
+            background: #2c5e2a;
+            color: white;
+            border-radius: 50px;
+            padding: 12px 20px;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-weight: bold;
+            z-index: 300;
+            opacity: 0;
+            transition: 0.2s;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        footer {
+            margin-top: 18px;
+            font-size: 0.65rem;
+            color: #b47c44;
+        }
+
+        /* Mobile එකට විශේෂ */
+        @media (max-width: 550px) {
+            .surprise-card {
+                padding: 18px 15px 30px;
+                border-radius: 50px;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+            .coconut {
+                width: 100px;
+                height: 125px;
+            }
+            .coconut-emoji {
+                font-size: 3.5rem;
+            }
+            .crack-text {
+                font-size: 0.7rem;
+                padding: 4px 10px;
+            }
+            .hit-counter {
+                font-size: 0.9rem;
+                padding: 6px 16px;
+            }
+            .btn {
+                padding: 12px 18px;
+                font-size: 0.9rem;
+                min-width: 130px;
+            }
+            .gift-message {
+                font-size: 0.9rem;
+                padding: 12px;
+            }
+            .toast {
+                white-space: normal;
+                width: 80%;
+                min-width: unset;
+                font-size: 0.8rem;
+                padding: 10px 15px;
+            }
+            .timer-display {
+                font-size: 1.4rem;
+                padding: 4px 16px;
+            }
+        }
+
+        /* very small devices */
+        @media (max-width: 400px) {
+            .coconut {
+                width: 85px;
+                height: 110px;
+            }
+            .coconut-emoji {
+                font-size: 3rem;
+            }
+            .btn {
+                padding: 10px 14px;
+                font-size: 0.85rem;
+                min-width: 110px;
+            }
+            .button-group {
+                gap: 8px;
+            }
+        }
+
+        /* Better touch targets */
+        @media (hover: none) and (pointer: coarse) {
+            .btn, .coconut {
+                cursor: default;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="fireworksCanvas"></canvas>
+<div class="bg-pattern"></div>
+
+<div class="surprise-card">
+    <h2>
+        <span>🏮</span> අලුත් අවුරුදු පුදුමය <span>🏮</span>
+    </h2>
+    <div class="sub">🌾 දිනන්න! 🌾</div>
+
+    <!-- Timer Display -->
+    <div class="timer-section">
+        <span class="timer-label">⏱️ ඉතිරි වෙලාව:</span>
+        <div class="timer-display" id="timerDisplay">00:30</div>
+    </div>
+
+    <div class="game-zone">
+        <div class="coconut-area">
+            <div class="coconut" id="magicCoconut">
+                <div class="coconut-emoji">🥥</div>
+                <div class="crack-text">මෙතන තට්ටු කරන්න</div>
+            </div>
+        </div>
+        <div class="hit-counter" id="hitCountDisplay">💥 පහර: 0 / 5</div>
+        <p style="margin-top: 10px; font-size: 0.75rem;">✨ තත්පර 30 ඇතුලත පොල් ගෙඩියට 5 වතාවක් තට්ටු කරන්න ✨</p>
+    </div>
+
+    <!-- සැඟවුණු සප්‍රයිස් එක -->
+    <div id="surpriseContainer" class="surprise-box hidden-gift">
+        <div class="gift-message" id="giftMessageBox">
+            🎁 <span>🎉🥥✨</span> 🎁
+        </div>
+    </div>
+
+    <div class="button-group">
+        <button class="btn fireworks-btn" id="fireworksBtn">🎆 ගිනිකෙළි</button>
+        <button class="btn reset-btn" id="resetGameBtn">🔄 නැවත ක්‍රීඩා කරන්න</button>
+    </div>
+    
+    <footer>🍬 පොල් ගෙඩිය කඩන්න, රන් ත්‍යාගයත් එක්ක ගිනිකෙළි පත්තු වෙයි! 🎆<br>✨ සුබ අලුත් අවුරුද්දක් වේවා! ✨<br>@_Mahesh Nadun</footer>
+</div>
+
+<div id="toastMessage" class="toast">🎉 පුදුමය සූදානම්!</div>
+
+<script>
+    (function() {
+        // ==================== ගිනිකෙළි පද්ධතිය ====================
+        const canvas = document.getElementById('fireworksCanvas');
+        const ctx = canvas.getContext('2d');
+        let fireworks = [];
+        let particles = [];
+        let animationId = null;
+        let canvasWidth, canvasHeight;
+
+        function resizeCanvas() {
+            canvasWidth = window.innerWidth;
+            canvasHeight = window.innerHeight;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Firework {
+            constructor(x, y, targetX, targetY) {
+                this.x = x;
+                this.y = y;
+                this.targetX = targetX;
+                this.targetY = targetY;
+                this.vx = (targetX - x) / 25;
+                this.vy = (targetY - y) / 25;
+                this.radius = 3;
+                this.color = `hsl(${Math.random() * 360}, 100%, 60%)`;
+                this.trail = [];
+                this.exploded = false;
+            }
+            update() {
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > 8) this.trail.shift();
+                this.x += this.vx;
+                this.y += this.vy;
+                const dx = this.x - this.targetX;
+                const dy = this.y - this.targetY;
+                if (Math.abs(dx) < 8 && Math.abs(dy) < 8 && !this.exploded) {
+                    this.exploded = true;
+                    createExplosion(this.targetX, this.targetY);
+                    return false;
+                }
+                return true;
+            }
+            draw() {
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const alpha = (i + 1) / this.trail.length * 0.6;
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, 2, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 200, 100, ${alpha})`;
+                    ctx.fill();
+                }
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 7;
+                this.vy = (Math.random() - 0.5) * 7 - 2;
+                this.gravity = 0.15;
+                this.alpha = 1;
+                this.color = color;
+                this.size = Math.random() * 4 + 2;
+                this.life = 1;
+            }
+            update() {
+                this.vx *= 0.99;
+                this.vy += this.gravity;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= 0.02;
+                this.alpha = this.life;
+                return this.life > 0;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function createExplosion(x, y) {
+            const colors = ['#ff0044', '#ffaa00', '#ff6600', '#ffee00', '#ff44cc', '#00ffcc', '#ff3333', '#ff66ff', '#44ff88', '#ff9900'];
+            for (let i = 0; i < 70; i++) {
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        function startFirework(targetX, targetY) {
+            const startX = Math.random() * canvasWidth;
+            const startY = canvasHeight;
+            fireworks.push(new Firework(startX, startY, targetX, targetY));
+        }
+
+        function launchRandomFireworks(count = 14) {
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * canvasWidth;
+                    const y = Math.random() * canvasHeight * 0.6 + 50;
+                    startFirework(x, y);
+                }, i * 120);
+            }
+        }
+
+        function animateFireworks() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            fireworks = fireworks.filter(fw => fw.update());
+            fireworks.forEach(fw => fw.draw());
+            particles = particles.filter(p => p.update());
+            particles.forEach(p => p.draw());
+            if (fireworks.length > 0 || particles.length > 0) {
+                animationId = requestAnimationFrame(animateFireworks);
+            } else {
+                if (animationId) cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+
+        function triggerFireworks() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                fireworks = [];
+                particles = [];
+                ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            }
+            launchRandomFireworks(16);
+            animateFireworks();
+            showToastMessage("🎆 ගිනිකෙළි! අලුත් අවුරුදු සැමරුම 🎆", false);
+        }
+
+        // ==================== Timer පද්ධතිය ====================
+        let timeLeft = 30; // තත්පර 30
+        let timerInterval = null;
+        let gameActive = true;
+        let gameCompleted = false;
+
+        const timerDisplay = document.getElementById('timerDisplay');
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimerDisplay() {
+            timerDisplay.textContent = formatTime(timeLeft);
+            // තත්පර 10 ට අඩු වෙද්දී රතු පාටට warn කරන්න
+            if (timeLeft <= 10) {
+                timerDisplay.classList.add('timer-warning');
+            } else {
+                timerDisplay.classList.remove('timer-warning');
+            }
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!gameActive || gameCompleted) return;
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    if (timeLeft === 0) {
+                        // වෙලාව ඉවරයි
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        gameActive = false;
+                        gameFailed();
+                    }
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function resetTimer() {
+            timeLeft = 30;
+            updateTimerDisplay();
+            timerDisplay.classList.remove('timer-warning');
+            stopTimer();
+        }
+
+        function gameFailed() {
+            if (surpriseRevealed) return;
+            gameActive = false;
+            coconutDiv.classList.add('disabled');
+            showToastMessage("⏰ වෙලාව ඉවරයි! නැවත උත්සාහ කරන්න 🔄", true);
+            
+            const surpriseHTML = `
+                <span>😢⏰😢</span><br>
+                <strong style="font-size:1.3rem;">වෙලාව ඉවරයි!</strong><br><br>
+                🌟 ඊළඟ වතාවේ උත්සාහ කරන්න! 🌟<br>
+                නැවත ක්‍රීඩා කරන්න බොත්තම ඔබන්න.<br>
+                🧧🌾🥥
+                <footer>_mahesh nadun_</footer>
+            `;
+            giftMsgDiv.innerHTML = surpriseHTML;
+            surpriseContainer.classList.remove('hidden-gift');
+            surpriseContainer.classList.add('gift-visible');
+        }
+
+        // ==================== ගේම් කොටස ====================
+        let hitCount = 0;
+        const requiredHits = 5;
+        let surpriseRevealed = false;
+
+        const coconutDiv = document.getElementById('magicCoconut');
+        const hitDisplay = document.getElementById('hitCountDisplay');
+        const surpriseContainer = document.getElementById('surpriseContainer');
+        const giftMsgDiv = document.getElementById('giftMessageBox');
+        const resetBtn = document.getElementById('resetGameBtn');
+        const fireworksBtn = document.getElementById('fireworksBtn');
+        const toastEl = document.getElementById('toastMessage');
+
+        function showToastMessage(msg, isError = false) {
+            toastEl.textContent = msg || (isError ? "😢 උනේ නෑ" : "🎉 සුබයි!");
+            toastEl.style.background = isError ? "#b4412e" : "#2c5e2a";
+            toastEl.classList.add('show');
+            setTimeout(() => {
+                toastEl.classList.remove('show');
+            }, 2000);
+        }
+
+        function updateHitDisplay() {
+            hitDisplay.innerText = `💥 පහර: ${hitCount} / ${requiredHits}`;
+            if (hitCount >= requiredHits && !surpriseRevealed && gameActive) {
+                revealSurprise();
+            }
+        }
+
+        function revealSurprise() {
+            if (surpriseRevealed) return;
+            surpriseRevealed = true;
+            gameCompleted = true;
+            gameActive = false;
+            stopTimer();
+
+            const surpriseHTML = `
+                <span>🌟🎇✨🌟</span><br>
+                <strong style="font-size:1.5rem;">🎁 රන් ත්‍යාගය 🎁</strong><br><br>
+                🌟 සුබ අලුත් අවුරුද්දක් වේවා! 🌟<br>
+                ඔබටත් ඔබගේ යාළුවන්ටත් සතුට, සෙනෙහස,<br>
+                දියුණුව ලැබේවා! <br>
+                🧧🌾🥥✨🎆
+                <footer>_mahesh nadun_</footer>
+            `;
+            giftMsgDiv.innerHTML = surpriseHTML;
+            surpriseContainer.classList.remove('hidden-gift');
+            surpriseContainer.classList.add('gift-visible');
+
+            const coconutEmojiSpan = coconutDiv.querySelector('.coconut-emoji');
+            coconutEmojiSpan.innerHTML = '🏆🥥🏆';
+            coconutDiv.style.background = "#d4923a";
+            
+            showToastMessage("🎁 රන් ත්‍යාගය හමු වුණා! 🎆", false);
+            
+            // රන් ත්‍යාගය open වෙද්දී ගිනිකෙළි
+            triggerFireworks();
+        }
+
+        function handleCoconutClick(e) {
+            e.preventDefault();
+            if (!gameActive || surpriseRevealed || !gameCompleted === false && surpriseRevealed) {
+                if (!gameActive && !surpriseRevealed) {
+                    showToastMessage("වෙලාව ඉවරයි! නැවත පටන් ගන්න", false);
+                } else if (surpriseRevealed) {
+                    showToastMessage("දැනටමත් රන් ත්‍යාගය දිනාගෙන! නැවත පටන් ගන්න", false);
+                }
+                return;
+            }
+            if (hitCount < requiredHits) {
+                hitCount++;
+                // visual feedback
+                coconutDiv.style.transform = "scale(0.95)";
+                setTimeout(() => { coconutDiv.style.transform = ""; }, 100);
+                updateHitDisplay();
+                if (hitCount !== requiredHits) {
+                    showToastMessage(`💥 පහර ${hitCount}/${requiredHits}`, false);
+                }
+            }
+        }
+
+        function resetGame() {
+            // reset all game state
+            hitCount = 0;
+            surpriseRevealed = false;
+            gameActive = true;
+            gameCompleted = false;
+            
+            updateHitDisplay();
+            
+            resetTimer();
+            startTimer();
+            
+            surpriseContainer.classList.remove('gift-visible');
+            surpriseContainer.classList.add('hidden-gift');
+            
+            const coconutEmojiSpan = coconutDiv.querySelector('.coconut-emoji');
+            coconutEmojiSpan.innerHTML = '🥥';
+            coconutDiv.style.background = "#8b5a2b";
+            coconutDiv.style.transform = "";
+            coconutDiv.classList.remove('disabled');
+            giftMsgDiv.innerHTML = `🎁 <span>🎉🥥✨</span> 🎁`;
+            
+            // ගිනිකෙළි නවත්වන්න
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                fireworks = [];
+                particles = [];
+                ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+                animationId = null;
+            }
+            
+            showToastMessage("🔄 ක්‍රීඩාව නැවත පටන් ගත්තා! තත්පර 30 ඇතුලත කොකුම් 5ම කඩන්න!", false);
+        }
+
+        // Touch + Mouse events
+        coconutDiv.addEventListener('click', handleCoconutClick);
+        coconutDiv.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleCoconutClick(e);
+        });
+        resetBtn.addEventListener('click', resetGame);
+        resetBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            resetGame();
+        });
+        fireworksBtn.addEventListener('click', triggerFireworks);
+        fireworksBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            triggerFireworks();
+        });
+
+        // initial state
+        updateHitDisplay();
+        surpriseContainer.classList.add('hidden-gift');
+        surpriseContainer.classList.remove('gift-visible');
+        startTimer();
+    })();
+</script>
+</body>
+</html>
