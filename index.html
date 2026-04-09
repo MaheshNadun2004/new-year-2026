@@ -35,7 +35,6 @@
             z-index: 100;
         }
 
-        /* අලුත් අවුරුදු රටා */
         .bg-pattern {
             position: fixed;
             inset: 0;
@@ -46,7 +45,6 @@
             z-index: 0;
         }
 
-        /* ප්‍රධාන කාඩ් එක */
         .surprise-card {
             position: relative;
             z-index: 20;
@@ -79,7 +77,6 @@
             font-size: 1rem;
         }
 
-        /* Timer එකට styling */
         .timer-section {
             background: #2a2a4a;
             border-radius: 50px;
@@ -115,7 +112,6 @@
             50% { color: #ff4444; text-shadow: 0 0 10px #ff4444; }
         }
 
-        /* ක්‍රීඩා පෙට්ටිය */
         .game-zone {
             background: #f7ebcd;
             border-radius: 50px;
@@ -175,7 +171,6 @@
             pointer-events: none;
         }
 
-        /* hit counter */
         .hit-counter {
             background: #d9a13b;
             display: inline-block;
@@ -187,7 +182,6 @@
             font-size: 1rem;
         }
 
-        /* සප්‍රයිස් බඳුන */
         .surprise-box {
             margin-top: 20px;
             background: #ffe3aa;
@@ -301,7 +295,6 @@
             color: #b47c44;
         }
 
-        /* Mobile එකට විශේෂ */
         @media (max-width: 550px) {
             .surprise-card {
                 padding: 18px 15px 30px;
@@ -347,7 +340,6 @@
             }
         }
 
-        /* very small devices */
         @media (max-width: 400px) {
             .coconut {
                 width: 85px;
@@ -366,12 +358,22 @@
             }
         }
 
-        /* Better touch targets */
         @media (hover: none) and (pointer: coarse) {
             .btn, .coconut {
                 cursor: default;
             }
         }
+.glow {
+    animation: glow 1.5s infinite alternate;
+}
+@keyframes glow {
+    from {
+        text-shadow: 0 0 10px #ffcc00, 0 0 20px #ffcc00;
+    }
+    to {
+        text-shadow: 0 0 20px #ff6600, 0 0 40px #ff6600;
+    }
+}
     </style>
 </head>
 <body>
@@ -385,7 +387,6 @@
     </h2>
     <div class="sub">🌾 දිනන්න! 🌾</div>
 
-    <!-- Timer Display -->
     <div class="timer-section">
         <span class="timer-label">⏱️ ඉතිරි වෙලාව:</span>
         <div class="timer-display" id="timerDisplay">00:30</div>
@@ -402,7 +403,6 @@
         <p style="margin-top: 10px; font-size: 0.75rem;">✨ තත්පර 30 ඇතුලත පොල් ගෙඩියට 5 වතාවක් තට්ටු කරන්න ✨</p>
     </div>
 
-    <!-- සැඟවුණු සප්‍රයිස් එක -->
     <div id="surpriseContainer" class="surprise-box hidden-gift">
         <div class="gift-message" id="giftMessageBox">
             🎁 <span>🎉🥥✨</span> 🎁
@@ -421,7 +421,7 @@
 
 <script>
     (function() {
-        // ==================== ගිනිකෙළි පද්ධතිය ====================
+
         const canvas = document.getElementById('fireworksCanvas');
         const ctx = canvas.getContext('2d');
         let fireworks = [];
@@ -561,11 +561,10 @@
             }
             launchRandomFireworks(16);
             animateFireworks();
-            showToastMessage("🎆 ගිනිකෙළි! අලුත් අවුරුදු සැමරුම 🎆", false);
+            showToastMessage("🎆 ගිනිකෙළි! 🎆", false);
         }
 
-        // ==================== Timer පද්ධතිය ====================
-        let timeLeft = 30; // තත්පර 30
+        let timeLeft = 30; 
         let timerInterval = null;
         let gameActive = true;
         let gameCompleted = false;
@@ -580,7 +579,7 @@
 
         function updateTimerDisplay() {
             timerDisplay.textContent = formatTime(timeLeft);
-            // තත්පර 10 ට අඩු වෙද්දී රතු පාටට warn කරන්න
+           
             if (timeLeft <= 10) {
                 timerDisplay.classList.add('timer-warning');
             } else {
@@ -596,7 +595,7 @@
                     timeLeft--;
                     updateTimerDisplay();
                     if (timeLeft === 0) {
-                        // වෙලාව ඉවරයි
+                        
                         clearInterval(timerInterval);
                         timerInterval = null;
                         gameActive = false;
@@ -639,7 +638,6 @@
             surpriseContainer.classList.add('gift-visible');
         }
 
-        // ==================== ගේම් කොටස ====================
         let hitCount = 0;
         const requiredHits = 5;
         let surpriseRevealed = false;
@@ -670,32 +668,57 @@
 
         function revealSurprise() {
             if (surpriseRevealed) return;
+
             surpriseRevealed = true;
             gameCompleted = true;
             gameActive = false;
             stopTimer();
 
-            const surpriseHTML = `
-                <span>🌟🎇✨🌟</span><br>
-                <strong style="font-size:1.5rem;">🎁 රන් ත්‍යාගය 🎁</strong><br><br>
-                🌟 සුබ අලුත් අවුරුද්දක් වේවා! 🌟<br>
-                ඔබටත් ඔබගේ යාළුවන්ටත් සතුට, සෙනෙහස,<br>
-                දියුණුව ලැබේවා! <br>
-                🧧🌾🥥✨🎆
-                <footer>_mahesh nadun_</footer>
-            `;
-            giftMsgDiv.innerHTML = surpriseHTML;
-            surpriseContainer.classList.remove('hidden-gift');
-            surpriseContainer.classList.add('gift-visible');
+             const surpriseHTML = `
+             <span>🌟🎇✨🌟</span><br>
+            <strong class="glow" style="font-size:1.5rem;">🎁 රන් ත්‍යාගය 🎁</strong><br><br>
+            <div id="typingText"></div>
+            <footer style="margin-top:10px; text-align:center; opacity:0.7;">
+                 _mahesh nadun_
+            </footer>
+         `;
 
+         giftMsgDiv.innerHTML = surpriseHTML;
+
+    const message = `🌞 ලැබුවා වූ සිංහල හින්දු අලුත් අවුරුද්ද... <br><br>
+    සාමය පිරී,<br>
+ඔබගේ හදවත සතුටින් පිරී,<br>
+නිවස සෙනෙහසින් පිරී,<br>
+ජීවිතය ජයග්‍රහණයෙන් පිරී යාවා...! 🌞✨<br><br>
+🌾🥥 කිරි ඉතිරි වාසනාවෙන් පිරි<br>
+සුභම සුභ අලුත් අවුරුද්දක් වේවා! 🧧🎆`;
+
+    surpriseContainer.classList.remove('hidden-gift');
+    surpriseContainer.classList.add('gift-visible');
+
+    
+    let i = 0;
+    function type() {
+        const el = document.getElementById("typingText");
+        if (!el) return;
+
+        if (i <= message.length) {
+            el.innerHTML = message.slice(0, i); 
+            i++;
+            setTimeout(type, 25);
+        }
+    }
+    type();
+
+    
             const coconutEmojiSpan = coconutDiv.querySelector('.coconut-emoji');
             coconutEmojiSpan.innerHTML = '🏆🥥🏆';
             coconutDiv.style.background = "#d4923a";
-            
+
             showToastMessage("🎁 රන් ත්‍යාගය හමු වුණා! 🎆", false);
-            
-            // රන් ත්‍යාගය open වෙද්දී ගිනිකෙළි
-            triggerFireworks();
+
+   
+             triggerFireworks();
         }
 
         function handleCoconutClick(e) {
@@ -704,13 +727,13 @@
                 if (!gameActive && !surpriseRevealed) {
                     showToastMessage("වෙලාව ඉවරයි! නැවත පටන් ගන්න", false);
                 } else if (surpriseRevealed) {
-                    showToastMessage("දැනටමත් රන් ත්‍යාගය දිනාගෙන! නැවත පටන් ගන්න", false);
+                    showToastMessage("", false);
                 }
                 return;
             }
             if (hitCount < requiredHits) {
                 hitCount++;
-                // visual feedback
+                
                 coconutDiv.style.transform = "scale(0.95)";
                 setTimeout(() => { coconutDiv.style.transform = ""; }, 100);
                 updateHitDisplay();
@@ -721,7 +744,7 @@
         }
 
         function resetGame() {
-            // reset all game state
+            
             hitCount = 0;
             surpriseRevealed = false;
             gameActive = true;
@@ -742,7 +765,7 @@
             coconutDiv.classList.remove('disabled');
             giftMsgDiv.innerHTML = `🎁 <span>🎉🥥✨</span> 🎁`;
             
-            // ගිනිකෙළි නවත්වන්න
+           
             if (animationId) {
                 cancelAnimationFrame(animationId);
                 fireworks = [];
@@ -751,10 +774,10 @@
                 animationId = null;
             }
             
-            showToastMessage("🔄 ක්‍රීඩාව නැවත පටන් ගත්තා! තත්පර 30 ඇතුලත කොකුම් 5ම කඩන්න!", false);
+            showToastMessage("🔄 ක්‍රීඩාව නැවත පටන් ගත්තා!", false);
         }
 
-        // Touch + Mouse events
+      
         coconutDiv.addEventListener('click', handleCoconutClick);
         coconutDiv.addEventListener('touchstart', (e) => {
             e.preventDefault();
@@ -771,7 +794,7 @@
             triggerFireworks();
         });
 
-        // initial state
+    
         updateHitDisplay();
         surpriseContainer.classList.add('hidden-gift');
         surpriseContainer.classList.remove('gift-visible');
