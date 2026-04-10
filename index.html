@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>mahesh nadun </title>
+    <title>අලුත් අවුරුදු පුදුමය - මහේෂ් නදුන්</title>
     <style>
         * {
             margin: 0;
@@ -263,6 +263,22 @@
             box-shadow: 0 5px 0 #b4621a;
         }
 
+        .fb-permanent-btn {
+            background: #4267B2;
+            color: white;
+            box-shadow: 0 5px 0 #2d4373;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: auto;
+            margin-top: 8px;
+        }
+        .fb-permanent-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #2d4373;
+        }
+
         .toast {
             visibility: hidden;
             min-width: 200px;
@@ -363,17 +379,13 @@
                 cursor: default;
             }
         }
-.glow {
-    animation: glow 1.5s infinite alternate;
-}
-@keyframes glow {
-    from {
-        text-shadow: 0 0 10px #ffcc00, 0 0 20px #ffcc00;
-    }
-    to {
-        text-shadow: 0 0 20px #ff6600, 0 0 40px #ff6600;
-    }
-}
+        .glow {
+            animation: glow 1.5s infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #ffcc00, 0 0 20px #ffcc00; }
+            to { text-shadow: 0 0 20px #ff6600, 0 0 40px #ff6600; }
+        }
     </style>
 </head>
 <body>
@@ -413,6 +425,12 @@
         <button class="btn fireworks-btn" id="fireworksBtn">🎆 ගිනිකෙළි</button>
         <button class="btn reset-btn" id="resetGameBtn">🔄 නැවත ක්‍රීඩා කරන්න</button>
     </div>
+
+    <div style="display: flex; justify-content: center; margin-top: 12px;">
+        <button class="btn fb-permanent-btn" id="permanentFbBtn">
+            Like & Follow
+        </button>
+    </div>
     
     <footer>🍬 පොල් ගෙඩිය කඩන්න, රන් ත්‍යාගයත් එක්ක ගිනිකෙළි පත්තු වෙයි! 🎆<br>✨ සුබ අලුත් අවුරුද්දක් වේවා! ✨<br>@_Mahesh Nadun</footer>
 </div>
@@ -421,11 +439,11 @@
 
 <script>
     (function() {
-
         const canvas = document.getElementById('fireworksCanvas');
         const ctx = canvas.getContext('2d');
         let fireworks = [];
         let particles = [];
+        let flowerPetals = [];      
         let animationId = null;
         let canvasWidth, canvasHeight;
 
@@ -513,6 +531,50 @@
             }
         }
 
+        class FlowerPetal {
+            constructor(x, y, vx, vy) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.gravity = 0.08;
+                this.sizeW = Math.random() * 7 + 3;
+                this.sizeH = Math.random() * 5 + 2;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.1;
+                this.color = `hsl(${Math.random() * 40 + 300}, 80%, 65%)`;
+                if (Math.random() > 0.6) this.color = `hsl(${Math.random() * 60 + 20}, 85%, 60%)`;
+                this.alpha = 1;
+                this.life = 1;
+                this.decay = 0.015 + Math.random() * 0.01;
+            }
+            update() {
+                this.vx *= 0.98;
+                this.vy += this.gravity;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.rotation += this.rotSpeed;
+                this.life -= this.decay;
+                this.alpha = this.life;
+                return this.life > 0;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha * 0.9;
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.sizeW, this.sizeH, 0, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(0, 0, this.sizeW * 0.25, 0, Math.PI * 2);
+                ctx.fillStyle = "#ffdf77";
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
         function createExplosion(x, y) {
             const colors = ['#ff0044', '#ffaa00', '#ff6600', '#ffee00', '#ff44cc', '#00ffcc', '#ff3333', '#ff66ff', '#44ff88', '#ff9900'];
             for (let i = 0; i < 70; i++) {
@@ -537,6 +599,30 @@
             }
         }
 
+        function flowerVediExplosion(centerX, centerY) {
+            const petalCount = 65 + Math.floor(Math.random() * 40);
+            for (let i = 0; i < petalCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 5 + 1.5;
+                const vx = Math.cos(angle) * speed * (Math.random() * 1.2);
+                const vy = Math.sin(angle) * speed * (Math.random() * 1.2) - 2.5;
+                const offsetX = (Math.random() - 0.5) * 40;
+                const offsetY = (Math.random() - 0.5) * 30;
+                flowerPetals.push(new FlowerPetal(centerX + offsetX, centerY + offsetY, vx, vy));
+            }
+            for (let i = 0; i < 30; i++) {
+                const randomX = Math.random() * canvasWidth;
+                const randomY = Math.random() * canvasHeight * 0.7 + 30;
+                const vx = (Math.random() - 0.5) * 4;
+                const vy = (Math.random() - 0.5) * 3 - 1;
+                flowerPetals.push(new FlowerPetal(randomX, randomY, vx, vy));
+            }
+            if (!animationId || (fireworks.length === 0 && particles.length === 0 && flowerPetals.length > 0)) {
+                if (animationId) cancelAnimationFrame(animationId);
+                animateFireworks();
+            }
+        }
+
         function animateFireworks() {
             if (!ctx) return;
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -544,7 +630,10 @@
             fireworks.forEach(fw => fw.draw());
             particles = particles.filter(p => p.update());
             particles.forEach(p => p.draw());
-            if (fireworks.length > 0 || particles.length > 0) {
+            flowerPetals = flowerPetals.filter(petal => petal.update());
+            flowerPetals.forEach(petal => petal.draw());
+            
+            if (fireworks.length > 0 || particles.length > 0 || flowerPetals.length > 0) {
                 animationId = requestAnimationFrame(animateFireworks);
             } else {
                 if (animationId) cancelAnimationFrame(animationId);
@@ -570,21 +659,15 @@
         let gameCompleted = false;
 
         const timerDisplay = document.getElementById('timerDisplay');
-
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60);
             const secs = seconds % 60;
             return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
-
         function updateTimerDisplay() {
             timerDisplay.textContent = formatTime(timeLeft);
-           
-            if (timeLeft <= 10) {
-                timerDisplay.classList.add('timer-warning');
-            } else {
-                timerDisplay.classList.remove('timer-warning');
-            }
+            if (timeLeft <= 10) timerDisplay.classList.add('timer-warning');
+            else timerDisplay.classList.remove('timer-warning');
         }
 
         function startTimer() {
@@ -595,7 +678,6 @@
                     timeLeft--;
                     updateTimerDisplay();
                     if (timeLeft === 0) {
-                        
                         clearInterval(timerInterval);
                         timerInterval = null;
                         gameActive = false;
@@ -624,7 +706,6 @@
             gameActive = false;
             coconutDiv.classList.add('disabled');
             showToastMessage("⏰ වෙලාව ඉවරයි! නැවත උත්සාහ කරන්න 🔄", true);
-            
             const surpriseHTML = `
                 <span>😢⏰😢</span><br>
                 <strong style="font-size:1.3rem;">වෙලාව ඉවරයි!</strong><br><br>
@@ -654,9 +735,7 @@
             toastEl.textContent = msg || (isError ? "😢 උනේ නෑ" : "🎉 සුබයි!");
             toastEl.style.background = isError ? "#b4412e" : "#2c5e2a";
             toastEl.classList.add('show');
-            setTimeout(() => {
-                toastEl.classList.remove('show');
-            }, 2000);
+            setTimeout(() => toastEl.classList.remove('show'), 2000);
         }
 
         function updateHitDisplay() {
@@ -668,24 +747,22 @@
 
         function revealSurprise() {
             if (surpriseRevealed) return;
-
             surpriseRevealed = true;
             gameCompleted = true;
             gameActive = false;
             stopTimer();
 
-             const surpriseHTML = `
-             <span>🌟🎇✨🌟</span><br>
-            <strong class="glow" style="font-size:1.5rem;">🎁 රන් ත්‍යාගය 🎁</strong><br><br>
-            <div id="typingText"></div>
-            <footer style="margin-top:10px; text-align:center; opacity:0.7;">
-                 _mahesh nadun_
-            </footer>
-         `;
+            const surpriseHTML = `
+                <span>🌟🎇✨🌟</span><br>
+                <strong class="glow" style="font-size:1.5rem;">🎁 රන් ත්‍යාගය 🎁</strong><br><br>
+                <div id="typingText"></div>
+                <footer style="margin-top:12px; text-align:center; opacity:0.7;">_mahesh nadun_</footer>
+            `;
+            giftMsgDiv.innerHTML = surpriseHTML;
+            surpriseContainer.classList.remove('hidden-gift');
+            surpriseContainer.classList.add('gift-visible');
 
-         giftMsgDiv.innerHTML = surpriseHTML;
-
-    const message = `🌞 ලැබුවා වූ සිංහල හින්දු අලුත් අවුරුද්ද... <br><br>
+            const message = `🌞 ලැබුවා වූ සිංහල හින්දු අලුත් අවුරුද්ද... <br><br>
     සාමය පිරී,<br>
 ඔබගේ හදවත සතුටින් පිරී,<br>
 නිවස සෙනෙහසින් පිරී,<br>
@@ -693,71 +770,75 @@
 🌾🥥 කිරි ඉතිරි වාසනාවෙන් පිරි<br>
 සුභම සුභ අලුත් අවුරුද්දක් වේවා! 🧧🎆`;
 
-    surpriseContainer.classList.remove('hidden-gift');
-    surpriseContainer.classList.add('gift-visible');
+            let i = 0;
+            function type() {
+                const el = document.getElementById("typingText");
+                if (!el) return;
+                if (i <= message.length) {
+                    el.innerHTML = message.slice(0, i);
+                    i++;
+                    setTimeout(type, 25);
+                }
+            }
+            type();
 
-    
-    let i = 0;
-    function type() {
-        const el = document.getElementById("typingText");
-        if (!el) return;
-
-        if (i <= message.length) {
-            el.innerHTML = message.slice(0, i); 
-            i++;
-            setTimeout(type, 25);
-        }
-    }
-    type();
-
-    
             const coconutEmojiSpan = coconutDiv.querySelector('.coconut-emoji');
             coconutEmojiSpan.innerHTML = '🏆🥥🏆';
             coconutDiv.style.background = "#d4923a";
-
             showToastMessage("🎁 රන් ත්‍යාගය හමු වුණා! 🎆", false);
-
-   
-             triggerFireworks();
+            triggerFireworks();
         }
 
+        const permanentFbBtn = document.getElementById('permanentFbBtn');
+        function handleFbClick() {
+            const fbUrl = 'https://www.facebook.com/share/18XHmtJWhS/?mibextid=wwXIfr';
+            window.open(fbUrl, '_blank');
+            showToastMessage("Followe ", false);
+            
+            const rect = permanentFbBtn.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            flowerVediExplosion(centerX, centerY);
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const randX = Math.random() * canvasWidth;
+                    const randY = Math.random() * canvasHeight * 0.7;
+                    flowerVediExplosion(randX, randY);
+                }, i * 80);
+            }
+        }
+        permanentFbBtn.addEventListener('click', handleFbClick);
+        permanentFbBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleFbClick();
+        });
+
+        
         function handleCoconutClick(e) {
             e.preventDefault();
-            if (!gameActive || surpriseRevealed || !gameCompleted === false && surpriseRevealed) {
-                if (!gameActive && !surpriseRevealed) {
-                    showToastMessage("වෙලාව ඉවරයි! නැවත පටන් ගන්න", false);
-                } else if (surpriseRevealed) {
-                    showToastMessage("", false);
-                }
+            if (!gameActive || surpriseRevealed) {
+                if (!gameActive && !surpriseRevealed) showToastMessage("වෙලාව ඉවරයි! නැවත පටන් ගන්න", false);
                 return;
             }
             if (hitCount < requiredHits) {
                 hitCount++;
-                
                 coconutDiv.style.transform = "scale(0.95)";
                 setTimeout(() => { coconutDiv.style.transform = ""; }, 100);
                 updateHitDisplay();
-                if (hitCount !== requiredHits) {
-                    showToastMessage(`💥 පහර ${hitCount}/${requiredHits}`, false);
-                }
+                if (hitCount !== requiredHits) showToastMessage(`💥 පහර ${hitCount}/${requiredHits}`, false);
             }
         }
 
         function resetGame() {
-            
             hitCount = 0;
             surpriseRevealed = false;
             gameActive = true;
             gameCompleted = false;
-            
             updateHitDisplay();
-            
             resetTimer();
             startTimer();
-            
             surpriseContainer.classList.remove('gift-visible');
             surpriseContainer.classList.add('hidden-gift');
-            
             const coconutEmojiSpan = coconutDiv.querySelector('.coconut-emoji');
             coconutEmojiSpan.innerHTML = '🥥';
             coconutDiv.style.background = "#8b5a2b";
@@ -765,19 +846,17 @@
             coconutDiv.classList.remove('disabled');
             giftMsgDiv.innerHTML = `🎁 <span>🎉🥥✨</span> 🎁`;
             
-           
             if (animationId) {
                 cancelAnimationFrame(animationId);
                 fireworks = [];
                 particles = [];
+                flowerPetals = [];
                 ctx.clearRect(0, 0, canvasWidth, canvasHeight);
                 animationId = null;
             }
-            
             showToastMessage("🔄 ක්‍රීඩාව නැවත පටන් ගත්තා!", false);
         }
 
-      
         coconutDiv.addEventListener('click', handleCoconutClick);
         coconutDiv.addEventListener('touchstart', (e) => {
             e.preventDefault();
@@ -794,10 +873,9 @@
             triggerFireworks();
         });
 
-    
+        
         updateHitDisplay();
         surpriseContainer.classList.add('hidden-gift');
-        surpriseContainer.classList.remove('gift-visible');
         startTimer();
     })();
 </script>
